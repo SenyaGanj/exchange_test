@@ -23,7 +23,7 @@ services:
     depends_on:
       - db
 
-  demon:
+  deamon:
     build:
       context: .
       dockerfile: ./Dockerfile
