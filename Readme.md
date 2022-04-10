@@ -18,5 +18,7 @@
 ### Запуск
 
 docker-compose build - собираем контейнеры
+
 docker-compose run backend pipenv run flask db update - применяем миграции
+
 docker-compose up -d - запускаем контейнеры
