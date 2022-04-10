@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
+</head>
+
+<body>
+    {% include 'base/header.html' %}
+
+    <main>
+
+      <div class="album py-5 bg-light">
+        <div class="container">
+            <h1>{{ instrument.name }}</h1>
+            <div id="graphic"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <script>
+        const pricesUrl = "{{ url_for('views.prices', instrument_id=instrument.id) }}"
+
+        let allDates = []
+        let allPrices = []
+        let lastPriceId = 0
+
+        let savePricesForGraph = function (prices) {
+            for(let price of prices){
+                allDates.push(new Date(price.date))
+                allPrices.push(price.price)
+            }
+
+            if(prices.length)
+                lastPriceId = prices.at(-1).id
+        }
+
+        let startIntervalPricesGraph = function () {
+            setInterval(function() {
+
+                fetch(pricesUrl + `?last_price_id=${lastPriceId}`)
+                    .then(response => response.json())
+                    .then(result => {
+                        savePricesForGraph(result.prices)
+                        Plotly.update('graphic', {
+                            x: [allDates],
+                            y: [allPrices],
+                        })
+                    })
+
+            }, 1000);
+        }
+
+        fetch(pricesUrl)
+            .then(response => response.json())
+            .then(result => {
+                savePricesForGraph(result.prices)
+
+                Plotly.newPlot('graphic', [{
+                    x: allDates,
+                    y: allPrices,
+                    mode: 'lines',
+                    line: {color: '#80CAF6'}
+                }]);
+
+                startIntervalPricesGraph()
+            })
+    </script>
+</body>
+</html>
